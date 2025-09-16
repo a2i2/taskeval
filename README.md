@@ -1,38 +1,97 @@
-# Project Title
+# TaskEval
 
-> Write a concise tagline that tells users exactly what this project does.
+## Setup
 
-Write a brief description of your project here. What is it? Who is it for? If you need tips on writing a good README, read [this](https://github.com/noffle/art-of-readme).
+### Prerequisites
 
-## Background (optional)
+1. **Python 3.10+** - Make sure you have Python 3.10 or higher installed
+2. **Poetry** - For dependency management
+3. **direnv** - For environment variable management
 
-Consider including a Background section if your project depends on important but not widely known abstractions or other ecosystems. Define and link to the big concepts and abstractions one needs to understand to use and grok your project. This is also a great place to explain the module's motivation if similar projects already exist.
+### Installation
 
-## Usage
+1. **Install direnv** (if not already installed):
 
-Demonstrate how the user interacts with this project and what the output/result is. A great way to engage your audience is to use an [animated screen capture](http://recordit.co/) or [terminal recording](https://github.com/chjj/ttystudio) as shown below. If you do add a screenshot, put the image file in the `.github` folder to keep the repository root clean.
+   ```bash
+   # On macOS with Homebrew
+   brew install direnv
 
-If this project is a library, perhaps add a brief code snippet showing how it is used.
+   # On Ubuntu/Debian
+   sudo apt-get install direnv
 
-![Screenshot](https://raw.githubusercontent.com/chjj/ttystudio/master/img/example.gif)
+   # On other systems, check: https://direnv.net/docs/installation.html
+   ```
 
-## Getting Started
+2. **Install Python dependencies**:
 
-The content of this section will vary depending on the type of project. Some guidelines:
+   ```bash
+   poetry install
+   ```
 
-* Any prerequisite libraries/frameworks/packages should be listed in a **Prerequisites** section with links to the relevant website or download page.
-* If this project has pre-built binaries supplied, an **Installation** section might be appropriate.
-* For code libraries, include a snippet users can paste into their `build.gradle` or similar.
-* If the project depends on a lot of third-party services, it should have a `docker-compose.yml` that can run everything at once.
+3. **Set up environment variables**:
 
-## Building from source
+   - Edit `.envrc` and replace the placeholder API key with your actual Anthropic API key:
 
-If the user wants to build the project from source, list the steps involved.
+   ```bash
+   export ANTHROPIC_API_KEY="your-actual-api-key-here"
+   ```
 
-## License
+4. **Allow direnv to load the environment**:
 
-If this is an open-source project, specify and/or link to a license here. There should also be a `LICENSE.md` file at the root of the repository, which GitHub is able to recognise. Current A2I2 open-source projects use the [BSD 3-Clause](https://github.com/a2i2/surround/blob/master/LICENSE.md) license.
+   ```bash
+   direnv allow
+   ```
 
-## Contributing
+### Usage
 
-Contributions are most welcome. Before submitting an issue or pull request, please familiarise yourself with the [Contribution Guidelines](./CONTRIBUTING.md).
+The tool can be run in two ways:
+
+#### Method 1: Using Poetry (Recommended)
+
+```bash
+poetry run python -m taskevals.pipeline
+```
+
+#### Method 2: Using Python directly (after activating the environment)
+
+```bash
+poetry shell
+python -m taskevals.pipeline
+```
+
+#### Command Line Arguments
+
+The tool accepts the following parameters:
+
+- `--task`: The task description (default: "Extract the data points in the chart image and provide the output as a table.")
+- `--task_input`: Path to the input file (default: "./new_chart_images/1.png")
+- `--llm_output`: Path to the output file (default: "./chart_xlxs_outputs/1.xlsx")
+
+#### Example Usage
+
+```bash
+# Run with default parameters
+poetry run python -m taskevals.pipeline
+
+# Run with custom parameters
+poetry run python -m taskevals.pipeline \
+  --task "Extract the data points in the chart image and provide the output as a table." \
+  --task_input "./data/new_chart_images/1.png" \
+  --llm_output "./outputs/1.xlsx"
+```
+
+### Output
+
+The tool generates Excel files with the following structure:
+
+- **Output sheet**: Contains the generated data in a single row
+- **Scenario_Info sheet**: Contains test scenario metadata
+
+### Troubleshooting
+
+1. **API Key Issues**: Make sure your `ANTHROPIC_API_KEY` is correctly set in the `.envrc` file
+2. **Direnv not loading**: Run `direnv allow` in the project directory
+3. **Python dependencies**: Make sure to run `poetry install` to install all required packages
+4. **File paths**: Ensure input files exist at the specified paths
+
+### Project Structure
