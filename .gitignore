@@ -229,3 +229,5 @@ pyrightconfig.json
 
 .envrc
 single_output/
+cache/
+outputs/
