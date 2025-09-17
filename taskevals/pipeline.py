@@ -100,19 +100,24 @@ JSON ONLY:
                 "notes": [f"Error generating elements: {str(e)}"],
             }
 
-    def generate_domain_keywords_interactive(self, task: str) -> str:
+    def generate_domain_keywords_interactive(
+        self, task: str, required_confirmation: bool = True
+    ) -> str:
         """Generate domain keywords with interactive editing capability"""
         print(f"\nGenerating domain keywords for task: {task}")
 
         proposal = self.propose_elements(task)
-        print("\nProposed elements to evaluate:", proposal["elements_string"])
-        if proposal["notes"]:
-            print("Notes:", proposal["notes"])
+        if required_confirmation:
+            print("\nProposed elements to evaluate:", proposal["elements_string"])
+            if proposal["notes"]:
+                print("Notes:", proposal["notes"])
 
-        # Let the developer accept or edit the single line:
-        edited = input(
-            "\nPress Enter to accept, or edit the comma-separated list: "
-        ).strip()
+            # Let the developer accept or edit the single line:
+            edited = input(
+                "\nPress Enter to accept, or edit the comma-separated list: "
+            ).strip()
+        else:
+            edited = proposal["elements_string"]
         final_line = edited if edited else proposal["elements_string"]
 
         print(f"Final domain keywords: {final_line}")
