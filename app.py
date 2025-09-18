@@ -11,7 +11,7 @@ from PIL import Image
 from taskevals.figure_extractions import figure_extractions
 from taskevals.qa_answering import qa_answering
 from ui.figure_extractions import figure_extractions_inputs, figure_extractions_results
-from ui.qa_answering import qa_answering_inputs
+from ui.qa_answering import qa_answering_inputs, qa_answering_results
 
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -37,20 +37,22 @@ st.subheader("LLM Task Evaluation Platform")
 # Initialize session state
 if "processed" not in st.session_state:
     st.session_state.processed = False
-if "results" not in st.session_state:
-    st.session_state.results = None
+if "task" not in st.session_state:
+    st.session_state.task = "figure_extractions"
 
 # Input section
 st.header("📝 Inputs")
 
 tab1, tab2 = st.tabs(["Figure Extraction", "QA Answering"])
 with tab1:
-    st.session_state.task = "figure_extractions"
     instruction, uploaded_file = figure_extractions_inputs()
 with tab2:
+    qa_question, expected_answer, uploaded_pdf = qa_answering_inputs()
+
+if tab1:
+    st.session_state.task = "figure_extractions"
+if tab2:
     st.session_state.task = "qa_answering"
-    qa_question, uploaded_pdf = qa_answering_inputs()
-st.session_state.task = "figure_extractions"
 
 # Process button
 col1, col2, col3 = st.columns([1, 2, 1])
@@ -60,37 +62,47 @@ with col2:
         type="primary",
         use_container_width=True,
         disabled=not (
-            (instruction and uploaded_file) or (qa_question and uploaded_pdf)
+            (instruction and uploaded_file)
+            or (qa_question and uploaded_pdf and expected_answer)
         ),
     )
 
 # Processing logic
-if process_button and instruction and uploaded_file:
-
+if (
+    process_button
+    and (instruction and uploaded_file)
+    or (qa_question and uploaded_pdf and expected_answer)
+):
     with st.spinner("Processing with LLM..."):
-        # Process uploaded image
-        image, error = process_uploaded_image(uploaded_file)
-        # Save image to local directory
-        image_path = os.path.join(
-            CACHE_DIR, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-        )
-        image.save(image_path)
+        if st.session_state.task == "figure_extractions":
+            # Process uploaded image
+            image, error = process_uploaded_image(uploaded_file)
+            # Save image to local directory
+            image_path = os.path.join(
+                CACHE_DIR, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+            )
+            image.save(image_path)
 
-        if error:
-            st.error(f"❌ {error}")
-        else:
-            # Simulate LLM processing
-            results = figure_extractions(instruction, image_path)
-            st.session_state.results = results
+            if error:
+                st.error(f"❌ {error}")
+            else:
+                # Simulate LLM processing
+                results = figure_extractions(instruction, image_path)
+                figure_extractions_results(image_path, results)
+                st.session_state.processed = True
+
+        elif st.session_state.task == "qa_answering":
+            # Process uploaded pdf
+            pdf_path = os.path.join(
+                CACHE_DIR, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            )
+            # Save pdf to local directory
+            with open(pdf_path, "wb") as f:
+                f.write(uploaded_pdf.getvalue())
+
+            # Get answer from the PDF
+            results = qa_answering(qa_question, pdf_path, expected_answer)
+            qa_answering_results(results)
             st.session_state.processed = True
-            st.success("✅ Processing completed successfully!")
-
-# Output section
-if st.session_state.processed and st.session_state.results:
-    print(st.session_state.task)
-    if st.session_state.task == "figure_extractions":
-        figure_extractions_results(image_path, st.session_state.results)
-    elif st.session_state.task == "qa_answering":
-        qa_answering(qa_question, uploaded_pdf)
-    else:
-        st.error(f"❌ Invalid task: {st.session_state.task}")
+        else:
+            st.error(f"❌ Invalid task: {st.session_state.task}")
