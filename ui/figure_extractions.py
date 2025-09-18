@@ -1,5 +1,6 @@
 import json
 
+import cairosvg
 import streamlit as st
 
 
@@ -97,7 +98,10 @@ def figure_extractions_results(image_path, results):
         if results["regenerated_chart_image"] == "":
             st.error("No regenerated chart image available")
         else:
-            st.markdown(results["regenerated_chart_image"], unsafe_allow_html=True)
+            png_bytes = cairosvg.svg2png(
+                bytestring=results["regenerated_chart_image"].encode("utf-8")
+            )
+            st.image(png_bytes)
     else:
         st.info("No critical errors found.")
 

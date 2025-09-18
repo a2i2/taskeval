@@ -1,9 +1,11 @@
 import os
 import base64
-import pandas as pd
 
 from io import StringIO
 from typing import Dict
+
+import openai
+import pandas as pd
 
 from anthropic import Anthropic
 
@@ -79,75 +81,49 @@ def _dataframe_to_table_description(df: pd.DataFrame) -> str:
     return table_desc
 
 
-def regenerate_chart_image(
-    task_input: str,
-    extracted_table_data: pd.DataFrame,
-    output_dir: str = "./outputs",
-) -> str:
+def regenerate_chart_image(task_input: str, extracted_table_data: pd.DataFrame) -> str:
     """
     Regenerate the chart image.
     """
     # Compose the prompt
     table_desc = _dataframe_to_table_description(extracted_table_data)
     prompt = (
-        # "Regenerate a chart image in the same style as the reference image. "
-        # "The chart should visualize the following data table: "
-        # f"{table_desc}. "
-        # "Match the chart type, axis labels, and overall style of the reference image as closely as possible."
-        "Create a simple 2D chart that is best to visualize the following data table in the same style as the reference image:\n"
+        "Regenerate a chart image in the same style as the reference image.\n"
+        "The chart should visualize the following data table:\n"
         f"{table_desc}.\n\n"
-        "Keep the chart simple, basic and clean, don't add any extra unnecessary elements.\n"
-        "Base64 encoded string of the chart image:\n"
+        "Match the chart type, axis labels, and overall style of the reference image as closely as possible, "
+        "but using the data from the table provided above.\n"
+        "Draw the chart in SVG for displaying in the markdown with no ```.\n"
+        "SVG code only ready for display:\n"
     )
-
+    image_data = get_base64_image(task_input)
     try:
-        # response = openai.images.generate(
-        #     model="gpt-image-0721-mini-alpha",
-        #     prompt=prompt,
-        #     n=1,
-        #     size="1024x1024",
-        # )
-        # response = openai.chat.completions.create(
-        #     model="gpt-5",
-        #     messages=[
-        #         {
-        #             "role": "system",
-        #             "content": (
-        #                 "You are a helpful assistant that generates chart images from data table descriptions. "
-        #                 "Return the image as a base64 encoded string of the chart image."
-        #             ),
-        #         },
-        #         {
-        #             "role": "user",
-        #             "content": [
-        #                 {
-        #                     "type": "image_url",
-        #                     "image_url": {
-        #                         "url": f"data:image/jpeg;base64,{get_base64_image(task_input)}",
-        #                     },
-        #                 },
-        #                 {
-        #                     "type": "text",
-        #                     "text": prompt,
-        #                 },
-        #             ],
-        #         },
-        #     ],
-        # )
-        # response = openai.responses.create(
-        #     model="gpt-5",
-        #     input=prompt,
-        #     # tools=[{"type": "image_generation"}],
-        # )
-        # print(response)
-        # image_base64 = response.choices[0].message.content
-        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # os.makedirs(output_dir, exist_ok=True)
-        # output_path = os.path.join(output_dir, f"regenerated_chart_{timestamp}.png")
-        # with open(output_path, "wb") as f:
-        #     f.write(base64.b64decode(image_base64))
-        # return output_path
-        return ""
+
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        client = openai.OpenAI(api_key=openai_api_key)
+
+        # Compose the message for OpenAI's GPT-4o vision model
+        response = client.chat.completions.create(
+            model="gpt-5",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": "data:image/png;base64," + image_data,
+                            },
+                        },
+                        {
+                            "type": "text",
+                            "text": prompt,
+                        },
+                    ],
+                }
+            ],
+        )
+        return response.choices[0].message.content
     except Exception as e:
         print(f"Error generating chart image: {e}")
         return ""
@@ -159,7 +135,6 @@ def figure_extractions(task: str, task_input: str, llm_output: str = "csv") -> D
     """
 
     output_generator = OutputGenerator(os.getenv("ANTHROPIC_API_KEY"))
-
     domain_keywords = output_generator.generate_domain_keywords_interactive(task, False)
     outputs = output_generator.generate_single_output(
         task=task,
@@ -170,5 +145,6 @@ def figure_extractions(task: str, task_input: str, llm_output: str = "csv") -> D
     # Add additional outputs
     outputs["extracted_table_data"] = extract_figure_into_table(task_input)
     new_chart = regenerate_chart_image(task_input, outputs["extracted_table_data"])
+    new_chart = new_chart.replace("```svg", "").replace("```", "")
     outputs["regenerated_chart_image"] = new_chart
     return outputs
