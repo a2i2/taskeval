@@ -53,7 +53,7 @@ with tab1:
 with tab2:
     qa_question, expected_answer, uploaded_pdf = qa_answering_inputs()
     # Set task when this tab is active
-    if qa_question or uploaded_pdf or expected_answer:
+    if qa_question or uploaded_pdf:
         st.session_state.task = "qa_answering"
 
 # Process button
@@ -64,16 +64,12 @@ with col2:
         type="primary",
         use_container_width=True,
         disabled=not (
-            (instruction and uploaded_file)
-            or (qa_question and uploaded_pdf and expected_answer)
+            (instruction and uploaded_file) or (qa_question and uploaded_pdf)
         ),
     )
 
 # Processing logic
-if process_button and (
-    st.session_state.task == "figure_extractions"
-    or st.session_state.task == "qa_answering"
-):
+if process_button:
     with st.spinner("Processing with LLM..."):
         if st.session_state.task == "figure_extractions":
             # Process uploaded image
