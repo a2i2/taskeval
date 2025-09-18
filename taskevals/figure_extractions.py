@@ -169,6 +169,6 @@ def figure_extractions(task: str, task_input: str, llm_output: str = "csv") -> D
     )
     # Add additional outputs
     outputs["extracted_table_data"] = extract_figure_into_table(task_input)
-    new_chart_path = regenerate_chart_image(task_input, outputs["extracted_table_data"])
-    outputs["regenerated_chart_image"] = new_chart_path
+    new_chart = regenerate_chart_image(task_input, outputs["extracted_table_data"])
+    outputs["regenerated_chart_image"] = new_chart
     return outputs

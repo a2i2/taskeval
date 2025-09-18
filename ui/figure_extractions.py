@@ -12,7 +12,7 @@ def figure_extractions_inputs():
         # Text input for LLM instructions
         instruction = st.text_area(
             "Enter your instructions for the LLM to perform:",
-            placeholder="e.g., Extract data points from this chart...",
+            placeholder="e.g., Extract the data points in the chart image and provide the output as a table...",
             height=150,
             help=(
                 "Provide clear instructions for what you want "
@@ -33,7 +33,7 @@ def figure_extractions_results(image_path, results):
     """
     Display the output results for the figure extractions.
     """
-    st.header("📊 Output Results")
+    st.header("📊 Extraction Results")
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Original chart image")
@@ -42,7 +42,7 @@ def figure_extractions_results(image_path, results):
         st.subheader("Extracted table data")
         st.dataframe(results["extracted_table_data"])
 
-    st.header("Evaluation strategy")
+    st.header("Evaluation Strategies")
     # Add notes to say that only visualize strategy is supported for now
     st.markdown(
         (
@@ -92,9 +92,12 @@ def figure_extractions_results(image_path, results):
                 st.markdown(f"**Rationale:**\n{rationales[error_name]}")
                 tab_counter += 1
 
-        st.subheader("Regenerated chart image")
+        st.subheader("Regenerated Chart Image")
         # TODO: Add regenerated chart image
-        st.error("No regenerated chart image available")
+        if results["regenerated_chart_image"] == "":
+            st.error("No regenerated chart image available")
+        else:
+            st.markdown(results["regenerated_chart_image"], unsafe_allow_html=True)
     else:
         st.info("No critical errors found.")
 
@@ -104,7 +107,7 @@ def figure_extractions_results(image_path, results):
     )
 
     # Make this collapsible
-    with st.expander("Raw evaluation results"):
+    with st.expander("Raw Evaluation Results"):
         st.code(
             json.dumps(temp_results, indent=2, ensure_ascii=False),
             language="json",
