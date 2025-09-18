@@ -34,6 +34,7 @@
 
    ```bash
    export ANTHROPIC_API_KEY="your-actual-api-key-here"
+   export OPENAI_API_KEY="your-actual-api-key-here"
    ```
 
 4. **Allow direnv to load the environment**:
@@ -44,54 +45,44 @@
 
 ### Usage
 
-The tool can be run in two ways:
+## Running the Application
 
-#### Method 1: Using Poetry (Recommended)
+### Start the Streamlit App
+
+To run the TaskEval Streamlit application:
 
 ```bash
-poetry run python -m taskevals.pipeline
+# Activate the Poetry environment and run Streamlit
+poetry run streamlit run app.py
 ```
 
-#### Method 2: Using Python directly (after activating the environment)
+Or if you prefer to activate the virtual environment first:
 
 ```bash
+# Activate the Poetry shell
 poetry shell
-python -m taskevals.pipeline
+
+# Run the Streamlit app
+streamlit run app.py
 ```
 
-#### Command Line Arguments
+The application will start and be available at `http://localhost:8501` in your web browser.
 
-The tool accepts the following parameters:
+### Application Features
 
-- `--task`: The task description (default: "Extract the data points in the chart image and provide the output as a table.")
-- `--task_input`: Path to the input file (default: "./new_chart_images/1.png")
-- `--llm_output`: Path to the output file (default: "./chart_xlxs_outputs/1.xlsx")
+The TaskEval app provides two main evaluation tasks:
 
-#### Example Usage
-
-```bash
-# Run with default parameters
-poetry run python -m taskevals.pipeline
-
-# Run with custom parameters
-poetry run python -m taskevals.pipeline \
-  --task "Extract the data points in the chart image and provide the output as a table." \
-  --task_input "./data/new_chart_images/1.png" \
-  --llm_output "./outputs/1.xlsx"
-```
-
-### Output
-
-The tool generates Excel files with the following structure:
-
-- **Output sheet**: Contains the generated data in a single row
-- **Scenario_Info sheet**: Contains test scenario metadata
+1. **Figure Extraction**: Upload an image and provide instructions to extract data points from charts/graphs
+2. **QA Answering**: Upload a PDF document and ask questions about its content
 
 ### Troubleshooting
 
-1. **API Key Issues**: Make sure your `ANTHROPIC_API_KEY` is correctly set in the `.envrc` file
-2. **Direnv not loading**: Run `direnv allow` in the project directory
-3. **Python dependencies**: Make sure to run `poetry install` to install all required packages
-4. **File paths**: Ensure input files exist at the specified paths
+If you encounter any issues:
 
-### Project Structure
+1. **Port already in use**: If port 8501 is busy, Streamlit will automatically use the next available port (8502, 8503, etc.)
+
+2. **Environment variables not loaded**: Make sure you've run `direnv allow` in the project directory
+
+3. **Dependencies not found**: Ensure you've run `poetry install` and activated the environment with `poetry shell`
+
+4. **API key issues**: Verify your API keys are correctly set in the `.envrc` file

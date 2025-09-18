@@ -46,13 +46,15 @@ st.header("📝 Inputs")
 tab1, tab2 = st.tabs(["Figure Extraction", "QA Answering"])
 with tab1:
     instruction, uploaded_file = figure_extractions_inputs()
+    # Set task when this tab is active
+    if instruction or uploaded_file:
+        st.session_state.task = "figure_extractions"
+
 with tab2:
     qa_question, expected_answer, uploaded_pdf = qa_answering_inputs()
-
-if tab1:
-    st.session_state.task = "figure_extractions"
-if tab2:
-    st.session_state.task = "qa_answering"
+    # Set task when this tab is active
+    if qa_question or uploaded_pdf or expected_answer:
+        st.session_state.task = "qa_answering"
 
 # Process button
 col1, col2, col3 = st.columns([1, 2, 1])
@@ -68,10 +70,9 @@ with col2:
     )
 
 # Processing logic
-if (
-    process_button
-    and (instruction and uploaded_file)
-    or (qa_question and uploaded_pdf and expected_answer)
+if process_button and (
+    st.session_state.task == "figure_extractions"
+    or st.session_state.task == "qa_answering"
 ):
     with st.spinner("Processing with LLM..."):
         if st.session_state.task == "figure_extractions":
@@ -86,7 +87,6 @@ if (
             if error:
                 st.error(f"❌ {error}")
             else:
-                # Simulate LLM processing
                 results = figure_extractions(instruction, image_path)
                 figure_extractions_results(image_path, results)
                 st.session_state.processed = True
