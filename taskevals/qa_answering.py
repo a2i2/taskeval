@@ -1,12 +1,8 @@
 import os
 import shutil
+from typing import Optional
 
-from llama_index.core import (
-    VectorStoreIndex,
-    SimpleDirectoryReader,
-    StorageContext,
-    load_index_from_storage,
-)
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.llms.openai import OpenAI
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.retrievers import VectorIndexRetriever
@@ -73,24 +69,39 @@ def _get_answer(qa_question, pdf_path):
         }
 
 
-def evaluate_qa_answer(question, expected_answer, answer, source_nodes):
+def evaluate_qa_answer(
+    question: str, expected_answer: Optional[str], answer: str, source_nodes: list[dict]
+):
     """
     Evaluate the QA answer.
     """
-    test_case = LLMTestCase(
-        input=question,
-        actual_output=answer,
-        expected_output=expected_answer,
-        retrieval_context=[node["text"] for node in source_nodes],
-    )
+    if expected_answer and expected_answer.strip() == "":
+        expected_answer = None
 
-    # Define metrics
-    metrics = [
-        AnswerRelevancyMetric(),
-        FaithfulnessMetric(),
-        ContextualPrecisionMetric(),
-        ContextualRecallMetric(),
-    ]
+    if expected_answer:
+        # Evaluate with expected answer
+        metrics = [
+            AnswerRelevancyMetric(),
+            FaithfulnessMetric(),
+            ContextualPrecisionMetric(),
+            ContextualRecallMetric(),
+        ]
+        test_case = LLMTestCase(
+            input=question,
+            actual_output=answer,
+            expected_output=expected_answer,
+            retrieval_context=[node["text"] for node in source_nodes],
+        )
+    else:
+        # Evaluate without expected answer
+        metrics = [
+            AnswerRelevancyMetric(),
+        ]
+        test_case = LLMTestCase(
+            input=question,
+            actual_output=answer,
+            retrieval_context=[node["text"] for node in source_nodes],
+        )
 
     # Run metrics one by one
     scores = {}
@@ -114,10 +125,7 @@ def qa_answering(question, pdf_path, expected_answer):
     )
     answer = _get_answer(question, pdf_path)
     outputs["qa_results"] = answer
-    if "automate" in outputs["error_strategy_mapping"].values():
-        outputs["qa_scores"] = evaluate_qa_answer(
-            question, expected_answer, answer["answer"], answer["source_nodes"]
-        )
-    else:
-        outputs["qa_scores"] = {}
+    outputs["qa_scores"] = evaluate_qa_answer(
+        question, expected_answer, answer["answer"], answer["source_nodes"]
+    )
     return outputs
