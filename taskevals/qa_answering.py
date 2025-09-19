@@ -60,7 +60,6 @@ def _get_answer(qa_question, pdf_path):
                 else []
             ),
         }
-
     except Exception as e:
         return {
             "question": qa_question,
@@ -111,21 +110,21 @@ def evaluate_qa_answer(
     return scores
 
 
-def qa_answering(question, pdf_path, expected_answer):
+def qa_answering(instruction, pdf_path, expected_answer):
     """
     Display the results of the QA answering.
     """
-    task = f"Answer the question from the uploaded pdf for this question: {question}"
-    domain_keywords = output_generator.generate_domain_keywords_interactive(task, False)
-    outputs = output_generator.generate_single_output(
-        task=task,
-        task_input=pdf_path,
-        llm_output="text",
-        domain_keywords=domain_keywords,
-    )
-    answer = _get_answer(question, pdf_path)
+    outputs = {}
+    # domain_keywords = output_generator.generate_domain_keywords_interactive(instruction, False)
+    # outputs = output_generator.generate_single_output(
+    #     task=instruction,
+    #     task_input=pdf_path,
+    #     llm_output="text",
+    #     domain_keywords=domain_keywords,
+    # )
+    answer = _get_answer(instruction, pdf_path)
     outputs["qa_results"] = answer
     outputs["qa_scores"] = evaluate_qa_answer(
-        question, expected_answer, answer["answer"], answer["source_nodes"]
+        instruction, expected_answer, answer["answer"], answer["source_nodes"]
     )
     return outputs

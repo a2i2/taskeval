@@ -134,14 +134,15 @@ def figure_extractions(task: str, task_input: str, llm_output: str = "csv") -> D
     Perform figure extractions.
     """
 
-    output_generator = OutputGenerator(os.getenv("ANTHROPIC_API_KEY"))
-    domain_keywords = output_generator.generate_domain_keywords_interactive(task, False)
-    outputs = output_generator.generate_single_output(
-        task=task,
-        task_input=task_input,
-        llm_output=llm_output,
-        domain_keywords=domain_keywords,
-    )
+    outputs = {}
+    # output_generator = OutputGenerator(os.getenv("ANTHROPIC_API_KEY"))
+    # domain_keywords = output_generator.generate_domain_keywords_interactive(task, False)
+    # outputs = output_generator.generate_single_output(
+    #     task=task,
+    #     task_input=task_input,
+    #     llm_output=llm_output,
+    #     domain_keywords=domain_keywords,
+    # )
     # Add additional outputs
     outputs["extracted_table_data"] = extract_figure_into_table(task_input)
     new_chart = regenerate_chart_image(task_input, outputs["extracted_table_data"])

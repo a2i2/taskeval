@@ -3,6 +3,9 @@ TaskEval - A Streamlit app for LLM task evaluation
 """
 
 import os
+import json
+
+from typing import Tuple, Optional
 from datetime import datetime
 
 import streamlit as st
@@ -10,8 +13,9 @@ from PIL import Image
 
 from taskevals.figure_extractions import figure_extractions
 from taskevals.qa_answering import qa_answering
-from ui.figure_extractions import figure_extractions_inputs, figure_extractions_results
-from ui.qa_answering import qa_answering_inputs, qa_answering_results
+from taskevals.task_classification import classify_task
+from ui.figure_extractions import figure_extractions_results
+from ui.qa_answering import qa_answering_results
 
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -21,11 +25,25 @@ st.set_page_config(page_title="TaskEval - LLM Task Evaluation", layout="wide")
 
 
 # Helper functions
-def process_uploaded_image(file_upload):
-    """Process uploaded image and return PIL Image object"""
+def process_uploaded_file(file_upload) -> Tuple[Optional[str], Optional[str]]:
+    """Process uploaded file and return PIL Image object when it's an image"""
+    if file_upload.type == "application/pdf":
+        # Process uploaded pdf
+        pdf_path = os.path.join(
+            CACHE_DIR, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        )
+        # Save pdf to local directory
+        with open(pdf_path, "wb") as f:
+            f.write(file_upload.getvalue())
+        return pdf_path, None
     try:
         img = Image.open(file_upload)
-        return img, None
+        # Save image to local directory
+        image_path = os.path.join(
+            CACHE_DIR, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+        )
+        img.save(image_path)
+        return image_path, None
     except (IOError, OSError) as e:
         return None, f"Error processing image: {str(e)}"
 
@@ -41,64 +59,73 @@ if "task" not in st.session_state:
     st.session_state.task = "figure_extractions"
 
 # Input section
-st.header("📝 Inputs")
-
-tab1, tab2 = st.tabs(["Figure Extraction", "QA Answering"])
-with tab1:
-    instruction, uploaded_file = figure_extractions_inputs()
-    # Set task when this tab is active
-    if instruction or uploaded_file:
-        st.session_state.task = "figure_extractions"
-
-with tab2:
-    qa_question, expected_answer, uploaded_pdf = qa_answering_inputs()
-    # Set task when this tab is active
-    if qa_question or uploaded_pdf:
-        st.session_state.task = "qa_answering"
+col1, col2 = st.columns([1, 1])
+with col1:
+    # Text input for LLM instructions
+    instruction = st.text_area(
+        "Enter your instructions for the LLM to perform:",
+        placeholder=(
+            "e.g., Extract the data points in the chart "
+            "image and provide the output as a table or "
+            "Answer this question by using the document: "
+            "How do they perform multilingual training?"
+        ),
+        height=150,
+        help=(
+            "Provide clear instructions for what you want "
+            "the LLM to do with the uploaded image"
+        ),
+    )
+with col2:
+    # File upload
+    uploaded_file = st.file_uploader(
+        "Choose an image or pdf file",
+        type=["png", "jpg", "jpeg", "pdf"],
+        help="Upload the diagram for the LLM to process",
+    )
+expected_answer = st.text_area(
+    "Enter your expected results for evaluating the LLM's answer:",
+    placeholder="e.g., table results from the image",
+    height=100,
+    help="Provide clear expected results from the uploaded image",
+)
 
 # Process button
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     process_button = st.button(
-        "🚀 Process with LLM",
+        "🚀 Perform task and evaluate",
         type="primary",
         use_container_width=True,
-        disabled=not (
-            (instruction and uploaded_file) or (qa_question and uploaded_pdf)
-        ),
+        disabled=not (instruction and uploaded_file),
     )
 
 # Processing logic
 if process_button:
     with st.spinner("Processing with LLM..."):
-        if st.session_state.task == "figure_extractions":
-            # Process uploaded image
-            image, error = process_uploaded_image(uploaded_file)
-            # Save image to local directory
-            image_path = os.path.join(
-                CACHE_DIR, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-            )
-            image.save(image_path)
-
-            if error:
-                st.error(f"❌ {error}")
-            else:
-                results = figure_extractions(instruction, image_path)
-                figure_extractions_results(image_path, results)
-                st.session_state.processed = True
-
-        elif st.session_state.task == "qa_answering":
-            # Process uploaded pdf
-            pdf_path = os.path.join(
-                CACHE_DIR, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-            )
-            # Save pdf to local directory
-            with open(pdf_path, "wb") as f:
-                f.write(uploaded_pdf.getvalue())
-
-            # Get answer from the PDF
-            results = qa_answering(qa_question, pdf_path, expected_answer)
-            qa_answering_results(results)
-            st.session_state.processed = True
+        processed_file_path, error = process_uploaded_file(uploaded_file)
+        if error:
+            st.error(f"❌ {error}")
         else:
-            st.error(f"❌ Invalid task: {st.session_state.task}")
+            # Get the task classification
+            try:
+                task_classification = classify_task(instruction)
+                parsed_classification = json.loads(task_classification)
+                if "task_classification" not in parsed_classification:
+                    raise Exception("Expected keyword 'task_classification' not found")
+                task = parsed_classification["task_classification"]
+            except Exception as e:
+                st.error(f"❌ Failed to classify task: {str(e)}")
+
+            if task == "FIGURE_EXTRACTION":
+                results = figure_extractions(instruction, processed_file_path)
+                figure_extractions_results(processed_file_path, results)
+                st.session_state.processed = True
+            elif task == "QA_ANSWERING":
+                results = qa_answering(
+                    instruction, processed_file_path, expected_answer
+                )
+                qa_answering_results(results)
+                st.session_state.processed = True
+            else:
+                st.error(f"❌ Invalid task: {st.session_state.task}")
