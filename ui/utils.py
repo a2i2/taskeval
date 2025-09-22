@@ -137,7 +137,7 @@ def extract_keywords_and_phrases(text: str, min_word_length: int = 3) -> Set[str
 
 
 def get_section_specific_matches(
-    llm_output: str, extracted_sections: List[Dict[str, str]]
+    llm_output: str, extracted_sections: List[str]
 ) -> Dict[int, Set[str]]:
     """Get keywords that match between LLM output and each specific extracted section."""
     llm_keywords = extract_keywords_and_phrases(llm_output)
@@ -145,7 +145,7 @@ def get_section_specific_matches(
     section_matches = {}
 
     for i, section in enumerate(extracted_sections):
-        section_keywords = extract_keywords_and_phrases(section["text"])
+        section_keywords = extract_keywords_and_phrases(section)
         # Find matches for this specific section
         matches = set()
         for llm_kw in llm_keywords:

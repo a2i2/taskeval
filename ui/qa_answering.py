@@ -20,22 +20,12 @@ def qa_answering_results(results):
     Display the results of the QA answering.
     """
     qa_results = results["qa_results"]
-    shortened_sources = [
-        {
-            "text": (
-                node["text"].strip()[:200] + "..."
-                if len(node["text"]) > 200
-                else node["text"].strip()
-            ),
-            "score": node["score"],
-        }
-        for node in qa_results["source_nodes"]
-    ]
     # Get section-specific matches
     section_matches = get_section_specific_matches(
-        qa_results["answer"], shortened_sources
+        qa_results["answer"], qa_results["extracted_source_nodes"]
     )
     st.header("QA Answering Results")
+    st.write(qa_results["answer"])
 
     st.subheader("Evaluation Metrics")
     metrics = results["qa_scores"]
@@ -56,13 +46,13 @@ def qa_answering_results(results):
         )
     with col2:
         st.subheader("Sources")
-        for i, node in enumerate(shortened_sources):
+        for i, node in enumerate(qa_results["extracted_source_nodes"]):
             color = HIGHLIGHT_COLORS[i % len(HIGHLIGHT_COLORS)]
             # Highlight keywords in this section if it has matches
             if i in section_matches:
                 highlighted_section = highlight_section_text(
-                    node["text"].strip(), section_matches[i], color
+                    node.strip(), section_matches[i], color
                 )
             else:
-                highlighted_section = node["text"].strip()
+                highlighted_section = node.strip()
             st.markdown(highlighted_section, unsafe_allow_html=True)
