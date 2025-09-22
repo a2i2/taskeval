@@ -55,4 +55,17 @@ def qa_answering_results(results):
                 )
             else:
                 highlighted_section = node.strip()
-            st.markdown(highlighted_section, unsafe_allow_html=True)
+            # Style the source with a frame and some padding
+            styled_section = f"""
+                <div style="
+                    border: 2px solid {color};
+                    border-radius: 8px;
+                    padding: 4px;
+                    margin-bottom: 2px;
+                    background-color: #f9f9f9;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                    ">
+                    {highlighted_section}
+                </div>
+            """
+            st.markdown(styled_section, unsafe_allow_html=True)
