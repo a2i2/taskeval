@@ -22,4 +22,4 @@ def figure_extractions_results(image_path, results):
             st.image(png_bytes)
 
     st.subheader("Extracted table data")
-    st.dataframe(results["extracted_table_data"], hide_index=True)
+    st.data_editor(results["extracted_table_data"], hide_index=True, num_rows="dynamic")

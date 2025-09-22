@@ -61,14 +61,26 @@ def qa_answering_results(results):
             # Style the source with a frame and some padding
             styled_section = f"""
                 <div style="
+                    position: relative;
                     border: 2px solid {color};
                     border-radius: 8px;
                     padding: 4px;
-                    margin-bottom: 2px;
+                    margin-bottom: 4px;
                     background-color: #f9f9f9;
                     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
                     ">
                     {highlighted_section}
+                    <div style="
+                        position: absolute;
+                        bottom: 2px;
+                        right: 8px;
+                        display: flex;
+                        gap: 8px;
+                        z-index: 10;
+                    ">
+                        <span style="font-size: 1.2em; cursor: pointer;" title="Thumbs up">&#128077;</span>
+                        <span style="font-size: 1.2em; cursor: pointer;" title="Thumbs down">&#128078;</span>
+                    </div>
                 </div>
             """
             st.markdown(styled_section, unsafe_allow_html=True)
