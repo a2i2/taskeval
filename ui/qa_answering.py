@@ -20,10 +20,13 @@ def qa_answering_results(results):
     Display the results of the QA answering.
     """
     qa_results = results["qa_results"]
+    # Limit the source nodes to 200 characters
+    source_nodes = [
+        (node[:200] + "..." if len(node) > 200 else node)
+        for node in qa_results["extracted_source_nodes"]
+    ]
     # Get section-specific matches
-    section_matches = get_section_specific_matches(
-        qa_results["answer"], qa_results["extracted_source_nodes"]
-    )
+    section_matches = get_section_specific_matches(qa_results["answer"], source_nodes)
     st.header("QA Answering Results")
     st.write(qa_results["answer"])
 
@@ -46,7 +49,7 @@ def qa_answering_results(results):
         )
     with col2:
         st.subheader("Sources")
-        for i, node in enumerate(qa_results["extracted_source_nodes"]):
+        for i, node in enumerate(source_nodes):
             color = HIGHLIGHT_COLORS[i % len(HIGHLIGHT_COLORS)]
             # Highlight keywords in this section if it has matches
             if i in section_matches:
