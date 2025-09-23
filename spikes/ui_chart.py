@@ -17,7 +17,7 @@ import html
 st.set_page_config(
     page_title="TASKEVAL - Chart Analysis",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
 
 # -----------------------------
@@ -25,9 +25,8 @@ st.set_page_config(
 # -----------------------------
 CONFIG = {
     "TASK_PROMPT": "Extract the data points in the chart image and provide the output as a table.",
-    "ORIG_IMAGE_PATH": "/Users/dilaniw/Desktop/PhD/validation research/New_Chart_Images/1.png",
-    "GEN_IMAGE_PATH": "/Users/dilaniw/Desktop/PhD/validation research/experiments/1_redrawn.png",
-
+    "ORIG_IMAGE_PATH": "./data/new_chart_images/1.png",
+    "GEN_IMAGE_PATH": "./outputs/1_redrawn.png",
     "EXTRACTED_DATA": {
         "PKA Energy (eV)": [250, 500, 1000, 1500, 2000, 2500],
         "Number of Collisions": [3, 5, 8, 12, 17, 22],
@@ -37,7 +36,8 @@ CONFIG = {
 # -----------------------------
 # CSS (larger font sizes throughout)
 # -----------------------------
-st.markdown("""
+st.markdown(
+    """
 <style>
   :root{
     --text:#000000;       /* black text everywhere */
@@ -184,7 +184,10 @@ st.markdown("""
     font-size: 2.2rem !important;
   }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
+
 
 # -----------------------------
 # Helpers
@@ -201,6 +204,7 @@ def load_image(path_str: str):
         return img, None
     except Exception as e:
         return None, f"Failed to open image: {e}"
+
 
 def render_table_bordered(df: pd.DataFrame) -> str:
     """Return a clean, centered HTML table with bigger text."""
@@ -229,20 +233,26 @@ def render_table_bordered(df: pd.DataFrame) -> str:
     </div>
     """
 
+
 # -----------------------------
 # UI
 # -----------------------------
 st.markdown("<h1>TASKEVAL</h1>", unsafe_allow_html=True)
 
 st.markdown("#### Task Instruction")
-st.markdown(f"<div class='prompt'>{CONFIG['TASK_PROMPT']}</div>", unsafe_allow_html=True)
+st.markdown(
+    f"<div class='prompt'>{CONFIG['TASK_PROMPT']}</div>", unsafe_allow_html=True
+)
 
 # --- Image comparison ---
 st.markdown("#### Image Comparison")
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    st.markdown("<div class='card'><div class='card-header'>Original Image</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='card'><div class='card-header'>Original Image</div>",
+        unsafe_allow_html=True,
+    )
     img, err = load_image(CONFIG.get("ORIG_IMAGE_PATH", ""))
     if err:
         st.error(err)
@@ -251,7 +261,10 @@ with col1:
     st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
-    st.markdown("<div class='card'><div class='card-header'>Regenerated Image</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='card'><div class='card-header'>Regenerated Image</div>",
+        unsafe_allow_html=True,
+    )
     img, err = load_image(CONFIG.get("GEN_IMAGE_PATH", ""))
     if err:
         st.error(err)
@@ -261,7 +274,9 @@ with col2:
 
 # --- Table ---
 st.markdown("<hr/>", unsafe_allow_html=True)
-st.markdown("<h4 class='section-title'>Extracted Table Data</h4>", unsafe_allow_html=True)
+st.markdown(
+    "<h4 class='section-title'>Extracted Table Data</h4>", unsafe_allow_html=True
+)
 
 df = pd.DataFrame(CONFIG["EXTRACTED_DATA"])
 st.markdown(render_table_bordered(df), unsafe_allow_html=True)
