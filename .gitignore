@@ -232,3 +232,5 @@ pyrightconfig.json
 single_output/
 cache/
 outputs/
+
+data/
