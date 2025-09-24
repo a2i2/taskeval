@@ -59,9 +59,49 @@ poetry run python scripts/evaluations/expand_qa_results.py \
   --output_csv_path="./outputs/qa_evals/expanded_qa_evals.csv"
 ```
 
+## Visualisation
+
+### `visualise_batch/figure_ui.py`
+
+Interactive Streamlit app for visualizing figure extraction results. Compare original chart images with regenerated charts and view extracted table data.
+
+```bash
+streamlit run scripts/visualise_batch/figure_ui.py
+```
+
+**Features:**
+
+- Side-by-side comparison of original and regenerated charts
+- Interactive table viewer for extracted data
+- Index-based navigation through results
+
+**Default paths:**
+
+- Original chart images: `./data/new_chart_images/`
+- Generated results: `./outputs/figure_extractions/`
+
+### `visualise_batch/qa_ui.py`
+
+Interactive Streamlit app for visualizing QA evaluation results. View questions, answers, evaluation metrics, and highlighted source sections.
+
+```bash
+streamlit run scripts/visualise_batch/qa_ui.py
+```
+
+**Features:**
+
+- Question and answer comparison
+- Evaluation metrics display (Relevancy, Faithfulness, Contextual Precision/Recall)
+- Highlighted source sections with match counts and ordered
+
+**Default path:**
+
+- QA evals results: `./outputs/qa_evals/expanded_qa_evals.csv`
+
 ## Notes
 
 - All scripts use Python Fire for command-line argument parsing
 - Make sure to run `poetry install` and set up environment variables as described in the root README.md
 - Scripts will create output directories automatically if they don't exist
 - Use `--help` with any script to see detailed parameter information
+- For visualisation scripts, ensure you have the required output files from evaluation scripts before running
