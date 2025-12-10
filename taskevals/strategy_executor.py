@@ -874,53 +874,6 @@ class StrategyExecutor:
             return snippet[:max_chars]
 
 
-# ----------------- example usage -----------------
-# def main():
-#     # ⚠️ Do NOT hardcode real keys in source; use env vars in practice.
-#     API_KEY = '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'
-#     # If you *must* pass directly: StrategyExecutor(api_key="sk-...")
-
-#     test_scenario = {
-#         "task": "Extract the data points in the chart image and provide the output as a table.",
-#         "task_input": "/Users/dilaniw/Desktop/PhD/validation research/New_Chart_Images/1.png",
-#         "llm_output": "/Users/dilaniw/Desktop/PhD/validation research/chart_xlxs_outputs/1.xlsx",
-#         "mappings": "/Users/dilaniw/Desktop/PhD/validation research/experiments/single_output/2.xlsx",
-       
-#     }
-
-#     executor = StrategyExecutor(api_key=API_KEY, model="gpt-4")
-
-#     # 1) Validate input files based on test_scenario
-#     validation = executor.validate_files(test_scenario)
-#     task = test_scenario.get("task", "")
-#     task_input = executor._read_file_content(test_scenario.get("task_input", ""))
-#     llm_output = executor._read_file_content(test_scenario.get("llm_output", ""))
-#     # print("Validation:", validation)
-    
-#     # print(task)
-#     # print(task_input)
-#     # print(llm_output)
-
-#     # 2) Load mappings from the single sheet (by index 0 or name)
-#     sheet = test_scenario.get("mappings_sheet", 0)
-#     mappings = executor.load_mappings(test_scenario["mappings"], sheet=sheet)
-    
-#     # Access the three lists:
-#     critical = mappings["Critical_Errors_With_Descriptions"]
-#     strat_map = mappings["Strategy_Mappings"]
-#     strat_rat = mappings["Strategy_Rationales"]
-
-#     # print("\nCritical_Errors_With_Descriptions:", critical)
-#     # print("Strategy_Mappings:", strat_map)
-#     # print("Strategy_Rationales:", strat_rat)
-
-#     results = executor.execute_error_strategies(mappings, test_scenario, task, task_input, llm_output)
-
-
-
-# if __name__ == "__main__":
-#     main()
-
 def main():
     
     api_key = os.getenv("ANTHROPIC_API_KEY")
