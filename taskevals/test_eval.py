@@ -2,7 +2,7 @@ from deepeval.metrics import AnswerRelevancyMetric, FaithfulnessMetric, Contextu
 from deepeval.test_case import LLMTestCase
 
 import os
-os.environ["OPENAI_API_KEY"] = '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'
+
     
 
 
