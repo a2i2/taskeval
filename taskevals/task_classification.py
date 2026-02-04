@@ -1,4 +1,5 @@
 import os
+import re
 
 import anthropic
 
@@ -15,15 +16,29 @@ You can only pick one of the following classifications:
 - QA_ANSWERING: This task is about answering a question based on a file. Any time the task is about answering a question based on a file, you should pick this classification.
 - OTHER: When you cannot classify the task into one of the above classifications, you should pick this classification.
 
-Return the classification in the following format:
+ONLY return the classification in the following format:
 {{
     "task_classification": "task_classification",
 }}"""
     response = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
+        model="claude-sonnet-4-5",
         max_tokens=100,
         messages=[
             {"role": "user", "content": prompt},
         ],
     )
-    return response.content[0].text
+
+    # Clean up the response to extract just the JSON
+    text = response.content[0].text
+
+    # Remove triple quotes
+    text = text.replace('"""', "")
+
+    # Remove markdown code blocks
+    text = re.sub(r"```json\s*", "", text)
+    text = re.sub(r"```\s*", "", text)
+
+    # Strip whitespace
+    text = text.strip()
+
+    return text
