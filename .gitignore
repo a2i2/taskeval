@@ -234,3 +234,4 @@ cache/
 outputs/
 
 data/
+.envrc

@@ -30,12 +30,22 @@
 
 3. **Set up environment variables**:
 
-   - Edit `.envrc` and replace the placeholder API key with your actual Anthropic API key:
+   - Copy the example environment file:
+
+   ```bash
+   cp .envrc.example .envrc
+   ```
+
+   - Edit `.envrc` and add your API keys:
 
    ```bash
    export ANTHROPIC_API_KEY="your-actual-api-key-here"
    export OPENAI_API_KEY="your-actual-api-key-here"
    ```
+
+   Note: You'll need to obtain API keys from:
+   - Anthropic API: https://console.anthropic.com/
+   - OpenAI API: https://platform.openai.com/api-keys
 
 4. **Allow direnv to load the environment**:
 
